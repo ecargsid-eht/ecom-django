@@ -1,0 +1,92 @@
+{% extends 'base.html' %} {% load crispy_forms_tags %} {% block content %}
+<div class="container">
+  <h2>Checkout Form</h2>
+
+  <div class="row">
+    <div class="col-7">
+      <div class="card">
+        <div class="card-body">
+          <form action="" method="post">
+            {% csrf_token %} {{form|crispy}}
+            <input
+              type="submit"
+              value="SAVE ADDRESS AND PAYMENT"
+              class="btn btn-success w-100"
+            />
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-5">
+      <div class="card">
+        <div class="card-header fs-4">Saved Addresses</div>
+        <div class="card-body">
+          <form action="{% url 'core:saved_address_action' %}" method="post">
+            {% csrf_token %} {% for add in address %}
+            <div class="card mb-3">
+              <div class="card-body">
+                <div class="form-check">
+                  <input
+                    type="radio"
+                    name="saved_address"
+                    value="{{add.id}}"
+                    id="address{{forloop.counter}}"
+                    class="form-check-input mt-5"
+                  />
+                  <label for="address{{forloop.counter}}">
+                    <h3>{{add.name}}</h3>
+                    <p class="small text-muted m-0">{{add.contact}}</p>
+                    <p class="small text-muted">
+                      {{add.locality}}, {{add.get_city_display}},
+                      {{add.get_state_display}}, {{add.pincode}}
+                    </p>
+                  </label>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<button id="rzp-button1">Pay</button>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  var options = {
+    key: "{{razorpay_key}}", // Enter the Key ID generated from the Dashboard
+    amount: "{{amount}}", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+    currency: "INR",
+    order_id: "{{order_id}}", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+    handler: function (response) {
+      alert(response.razorpay_payment_id);
+      alert(response.razorpay_order_id);
+      alert(response.razorpay_signature);
+    },
+    prefill: {
+      name: "{{request.user.username}}",
+      email: "{{request.user.email}}",
+      contact: "{{address.0.contact}}",
+    },
+
+    theme: {
+      color: "#3399cc",
+    },
+  };
+  var rzp1 = new Razorpay(options);
+  rzp1.on("payment.failed", function (response) {
+    alert(response.error.code);
+    alert(response.error.description);
+    alert(response.error.source);
+    alert(response.error.step);
+    alert(response.error.reason);
+    alert(response.error.metadata.order_id);
+    alert(response.error.metadata.payment_id);
+  });
+  document.getElementById("rzp-button1").onclick = function (e) {
+    rzp1.open();
+    e.preventDefault();
+  };
+</script>
+{% endblock %}

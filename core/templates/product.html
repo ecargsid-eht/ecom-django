@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-12">
+                <div class="row">
+                   <div class="col-3">
+                        <img src="{{object.image.url}}"  alt="" class="card-img-top">
+                   </div>
+                    <div class='col-9'>
+                        <div class="card shadow">
+                            <div class="card-body">
+                                <h6>{{ object.title }}</h6>
+                                <h6>{{ object.category }}</h6>
+                                <h6>Rs.{{ object.discount_price }}</h6>
+                                <h6><del>Rs.{{ object.price }}</del></h6>
+                               <a href="" class="btn btn-success">Buy Now</a>
+                               <form action="{% url 'core:add-to-cart' object.slug %}" class="">
+                                   {% for foo in object.variation_set.all %}
+                                        <p>{{foo.name}}</p>
+                                        {% for val in foo.itemvariation_set.all %}
+                                            <input type="radio" class="form-check-input" value="{{val.value}}" name="{{foo.name}}" required/>
+                                            <label for="" class="form-check-label">{{val.value}}</label>
+
+                                        {% endfor %}
+                                   {% endfor %}
+                                <input type="submit" value="Add To Cart" class="btn btn-primary">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-12">
+                <div class="row">
+                   {% for item in items %}
+                   <div class="col-3">
+                        <div class="card shadow">
+                            <img src="{{item.image.url}}" style="height:300px" alt="" class="card-img-top">
+                            <div class="card-body">
+                                <h6>{{ item.get_category_display }}</h6>
+                                <h6>
+                                    <form action="" class="text-truncate text-decoration-none text-dark text-capitalize">{{item.title}}
+
+                                    </form>
+                                </h6>
+                            </div>
+                        </div>
+                    </div>
+                   {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends 'base.html' %} {% block content %}
+
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-8">
+      {% for order_item in object.items.all %}
+      <div class="media d-flex shadow p-2 d-block mt-3">
+        <img src="{{order_item.item.image.url}}" class="media-image d-block shadow" style="width: 120px" />
+
+        <div class="media-body ps-3">
+          <h5 class="mt-5 fw-bold">{{order_item.item.title}}</h5>
+          {% if order_item.item_variations.exists %} 
+          {% for foo in order_item.item_variations.all %}
+          <small class="text-muted">{{foo.variation.name}}: {{foo.value}}</small>
+          {% endfor %} 
+          {% endif %}
+          <span class="d-block my-2">
+            {% if order_item.item.discount_price %}
+            <p class="text-dark h5 fw-bold d-inline">
+              ₹. {% widthratio order_item.item.discount_price 1 order_item.qty %} 
+            </p>
+            <p class="text-success h5 fw-bold ">
+              Total Saved: ₹ {{order_item.get_saved_amount}} ({{order_item.total_discount_percentage_price}}%)
+            </p>
+            <p class="text-dark h5 fw-normal d-inline">
+              <del>{{order_item.item.price}}</del>
+            </p>
+            {% else %}
+            <p class="text-dark h5 fw-normal d-inline">
+              ₹. {% widthratio order_item.item.price 1 order_item.qty %}
+            </p>
+
+            {% endif %}
+          </span>
+
+          <span class="d-inline-block my-2">
+            <a href="{% url 'core:minus-item' order_item.item.slug  %}" class="btn btn-danger fw-bolder">-</a>
+            <span>{{order_item.qty}}</span>
+            <a href="{% url 'core:add-to-cart' order_item.item.slug %}" class="btn btn-danger fw-bolder">+</a>
+          </span>
+          <div class="py-2">
+            <a href="{% url 'core:delete-item' order_item.item.slug %}" class="btn btn-secondary">Remove</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="col-4">
+      <div class="list-group">
+        <div class="list-group-item list-group-item-action">
+          <span class="fw-bold">Total Amount</span>
+          <span class="float-end">Rs. {{object.get_total}}</span>
+        </div>
+        <div class="list-group-item list-group-item-action">
+          <span class="fw-bold">Tax GST(18%)</span>
+          <span class="float-end">Rs {{object.get_total_tax}}</span>
+        </div>
+        {% if object.get_total_discount_amount > 0.0 %}
+        <div class="list-group-item list-group-item-action bg-success text-white">
+          <span class="fw-bold">Total Discount</span>
+          <span class="float-end">Rs {{object.get_total_discount_amount}}</span>
+        </div>
+        {% endif %}
+        {% comment %} <div class="list-group-item list-group-item-action bg-warning text-white">
+          <span class="fw-bold">Coupon Discount</span>
+          <span class="float-end">Rs 5000</span>
+        </div> {% endcomment %}
+        {% if object.coupon %}
+        <div class="list-group-item list-group-item-action bg-warning text-white">
+          <span class="fw-bold">Coupon Discount</span>
+          <span class="float-end">Rs. {{object.coupon.amount}}</span>
+        </div>
+      {% endif %}
+        <div class="list-group-item list-group-item-action fs-4">
+          <span class="fw-bold">Total Payable</span>
+          <span class="float-end">Rs {{object.get_payable_amount}}</span>
+        </div>
+      </div>
+
+      {% if object.coupon %}
+        <h2 class="small text-center">This coupon is added <a href="{% url 'core:remove-coupon' %}" class="btn-link">Remove</a></h2>
+      {% else %}
+
+        <div class="card mt-3">
+          <div class="card-body">
+            <form action="{% url 'core:add-coupon' %}" method="POST" class="d-flex">
+              {% csrf_token %}
+              {{couponform.code}}
+              <input type="submit" value="GO" class="btn btn-success">
+            </form>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="row">
+        <div class="col">
+          <a href="" class="btn btn-success w-100">Continue Shopping</a>
+        </div>
+        <div class="col">
+          <a href="{% url 'core:checkout' %}" class="btn btn-primary w-100">Checkout</a>
+
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+{% endblock %}
